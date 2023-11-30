@@ -24,7 +24,6 @@ class File:
         self.name = name
         self.drive = drive
         self.path = os.path.join(drive.root, name)
-        self.sha256 = None
 
     def get_sha256(self):
         sha256_hash = hashlib.sha256()
