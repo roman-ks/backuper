@@ -43,7 +43,7 @@ if existent_files:
         if file != newest_file:
             if not file.exists() or (file.exists() and newest_file.get_sha256() != file.get_sha256()):
                 os.makedirs(os.path.dirname(file.path), exist_ok=True)
-                shutil.copy(newest_file.path, file.path)
+                shutil.copy2(newest_file.path, file.path)
 
                 file_hash = file.get_sha256()
                 print(
