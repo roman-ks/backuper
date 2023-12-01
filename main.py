@@ -48,13 +48,15 @@ def get_drives():
 
 
 def get_files_on_drive(drive):
-    paths = glob.glob(os.path.join(drive.folder_path, includes_pathname))
+    paths = glob.glob(os.path.join(drive.folder_path, includes_pathname), recursive=True)
 
     drive_name_file_on_this_drive = os.path.join(drive.folder_path, drive_name_file)
     if drive_name_file_on_this_drive in paths:
         paths.remove(os.path.join(drive.folder_path, drive_name_file))
 
-    return [File(os.path.relpath(path, drive.folder_path), drive) for path in paths]
+    file_paths = filter(lambda x: os.path.isfile(x), paths)
+
+    return [File(os.path.relpath(path, drive.folder_path), drive) for path in file_paths]
 
 
 def get_unique_paths():
