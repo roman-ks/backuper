@@ -3,6 +3,7 @@ import shutil
 import string
 import json
 import glob
+import urllib.request
 
 from files_module import Drive, File
 
@@ -74,6 +75,37 @@ def get_newest_file(files):
     return next(iter(sorted(existent_files, key=lambda x: x.get_last_modified(), reverse=True)))
 
 
+def file_to_dto(file):
+    return {
+        "path": file.rel_path,
+        "driveId": file.drive.id,
+        "driveName": file.drive.name,
+        "lastModified": file.get_last_modified()
+    }
+
+
+def post_to_endpoint(files):
+    print("Preparing to do POST to endpoint")
+    url = config["endpoint"]
+    if not url:
+        print("No endpoint config")
+        return
+
+    request_list = [file_to_dto(file) for file in files]
+
+    data = json.dumps(request_list).encode('utf8')
+    request = urllib.request.Request(url, data=data,
+                                     headers={'content-type': 'application/json'})
+    try:
+        response = urllib.request.urlopen(request)
+        if response.code == 200:
+            print("Posted successfully")
+        else:
+            print(f"Response code: {response.getCode()}")
+    except Exception as e:
+        print(f"Error posting: {e}")
+
+
 load_config()
 if not config.get('folder_path', None):
     print("folder_path not set in config!")
@@ -85,6 +117,7 @@ print(f'Found {len(drives_list)} drives: [{drives_str}]')
 
 unique_files = get_unique_paths()
 print(f"Found unique files: {unique_files}")
+copied_files = []
 for unique_path in unique_files:
     # list files with the same path on different drives
     files_on_drives = []
@@ -104,5 +137,9 @@ for unique_path in unique_files:
                 os.makedirs(os.path.dirname(file_on_this_drive.path), exist_ok=True)
                 shutil.copy2(newest_file.path, file_on_this_drive.path)
                 print(f'Copied {newest_file.path} to {file_on_this_drive.path}')
+                copied_files.append(file_on_this_drive)
         else:
             print(f"File {file_on_this_drive.path} is up to date")
+
+if copied_files:
+    post_to_endpoint(copied_files)
