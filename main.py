@@ -10,7 +10,8 @@ from files_module import Drive, File
 config = {}
 drive_name_file = ''
 rel_folder_path = ''
-includes_pathname = ''
+include_pathname = ''
+exclude_pathname = ''
 
 
 def load_config():
@@ -22,8 +23,10 @@ def load_config():
     drive_name_file = config.get("files", {}).get("drive_name_file", None)
     global rel_folder_path
     rel_folder_path = config["folder_path"]
-    global includes_pathname
-    includes_pathname = config.get("files", {}).get("includes", None)
+    global include_pathname
+    include_pathname = config.get("files", {}).get("include", None)
+    global exclude_pathname
+    exclude_pathname = config.get("files", {}).get("exclude", None)
 
 
 def get_drives():
@@ -49,11 +52,15 @@ def get_drives():
 
 
 def get_files_on_drive(drive):
-    paths = glob.glob(os.path.join(drive.folder_path, includes_pathname), recursive=True)
+    paths = glob.glob(os.path.join(drive.folder_path, include_pathname), recursive=True)
 
     drive_name_file_on_this_drive = os.path.join(drive.folder_path, drive_name_file)
     if drive_name_file_on_this_drive in paths:
         paths.remove(os.path.join(drive.folder_path, drive_name_file))
+
+    if exclude_pathname:
+        excluded_paths = glob.glob(os.path.join(drive.folder_path, exclude_pathname), recursive=True)
+        paths = [p for p in paths if p not in excluded_paths]
 
     file_paths = filter(lambda x: os.path.isfile(x), paths)
 

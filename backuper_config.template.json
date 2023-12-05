@@ -3,6 +3,7 @@
   "folder_path": "",
   "files": {
     "drive_name_file": "",
-    "includes": ""
+    "include": "",
+    "exclude": ""
   }
 }
